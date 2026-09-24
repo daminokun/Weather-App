@@ -1,4 +1,4 @@
-const apiKey = "MASUKKAN_API_KEY_ANDA_DI_SINI";
+const apiKey = "ac324a808280e23b7458e9e2244c90a2";
 const apiUrl = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
 
 const searchBox = document.getElementById("cityInput");
