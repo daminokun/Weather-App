@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather App</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <div class="search">
+      <input type="text" id="cityInput" placeholder="Masukkan nama bandar..." spellcheck="false">
+      <button id="searchBtn">🔍</button>
+    </div>
+    
+    <div class="error" id="errorMsg">Nama bandar tidak dijumpai!</div>
+    
+    <div class="weather" id="weatherBox">
+      <img src="https://openweathermap.org/img/wn/02d@4x.png" class="weather-icon" id="weatherIcon" alt="Weather Icon">
+      <h1 id="temp">--°C</h1>
+      <h2 id="city">--</h2>
+      
+      <div class="details">
+        <div class="col">
+          <p id="humidity">--%</p>
+          <p>Kelembapan</p>
+        </div>
+        <div class="col">
+          <p id="wind">-- km/h</p>
+          <p>Kelajuan Angin</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
