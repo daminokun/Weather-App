@@ -4,22 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weather App</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=3.0">
 </head>
 <body>
   <div class="card">
- <div class="search">
+    <div class="search">
       <div class="input-container">
         <input type="text" id="cityInput" placeholder="Masukkan nama bandar..." autocomplete="off" spellcheck="false">
         <div id="suggestions" class="suggestions-box"></div>
       </div>
-      <button id="searchBtn">🔍</button>
+      <button id="searchBtn" aria-label="Cari">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
     </div>
     
     <div class="error" id="errorMsg">Nama bandar tidak dijumpai!</div>
     
     <div class="weather" id="weatherBox">
-      <img src="https://openweathermap.org/img/wn/02d@4x.png" class="weather-icon" id="weatherIcon" alt="Weather Icon">
+      <img src="https://openweathermap.org/img/wn/02d@4x.png" class="weather-icon" id="weatherIcon" alt="Ikon Cuaca">
       <h1 id="temp">--°C</h1>
       <h2 id="city">--</h2>
       
