@@ -7,15 +7,23 @@ const searchBtn = document.getElementById("searchBtn");
 const errorMsg = document.getElementById("errorMsg");
 const weatherIcon = document.getElementById("weatherIcon");
 
-// Fungsi kemas kini UI selepas terima data API
+// Kemas kini UI dan gambar latar belakang HD
 function updateUI(data) {
   document.getElementById("city").textContent = data.name;
   document.getElementById("temp").textContent = Math.round(data.main.temp) + "°C";
   document.getElementById("humidity").textContent = data.main.humidity + "%";
   document.getElementById("wind").textContent = data.wind.speed + " km/h";
 
+  // Tukar Ikon Cuaca
   const iconCode = data.weather[0].icon;
   weatherIcon.src = `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
+
+  // Tukar Gambar Latar Belakang HD berdasarkan Nama Bandar dan Keadaan Cuaca
+  const weatherCondition = data.weather[0].main;
+  const cityName = data.name;
+  const bgUrl = `https://source.unsplash.com/1920x1080/?${cityName},${weatherCondition}`;
+  
+  document.body.style.backgroundImage = `url('${bgUrl}')`;
 
   errorMsg.style.display = "none";
 }
@@ -37,7 +45,7 @@ async function checkWeatherByCity(city) {
   }
 }
 
-// Carian mengikut koordinat GPS (Latitud & Longitud)
+// Carian mengikut koordinat GPS
 async function checkWeatherByCoords(lat, lon) {
   try {
     const response = await fetch(`${apiUrlCoords}lat=${lat}&lon=${lon}&appid=${apiKey}`);
@@ -45,7 +53,7 @@ async function checkWeatherByCoords(lat, lon) {
       const data = await response.json();
       updateUI(data);
     } else {
-      checkWeatherByCity("Kuala Lumpur"); // Fallback jika ralat API
+      checkWeatherByCity("Kuala Lumpur");
     }
   } catch (err) {
     checkWeatherByCity("Kuala Lumpur");
@@ -57,18 +65,15 @@ function initWeather() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        // User izinkan akses lokasi (GPS)
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
         checkWeatherByCoords(lat, lon);
       },
       (error) => {
-        // User tolak (Deny) atau ralat GPS -> Guna default location
         checkWeatherByCity("Kuala Lumpur");
       }
     );
   } else {
-    // Pelayar tidak menyokong Geolocation API -> Guna default location
     checkWeatherByCity("Kuala Lumpur");
   }
 }
@@ -86,9 +91,3 @@ searchBox.addEventListener("keypress", (e) => {
 
 // Jalankan semasa aplikasi dimuatkan
 initWeather();
-
-searchBox.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") {
-    checkWeather(searchBox.value);
-  }
-});
