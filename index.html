@@ -8,8 +8,11 @@
 </head>
 <body>
   <div class="card">
-    <div class="search">
-      <input type="text" id="cityInput" placeholder="Masukkan nama bandar..." spellcheck="false">
+ <div class="search">
+      <div class="input-container">
+        <input type="text" id="cityInput" placeholder="Masukkan nama bandar..." autocomplete="off" spellcheck="false">
+        <div id="suggestions" class="suggestions-box"></div>
+      </div>
       <button id="searchBtn">🔍</button>
     </div>
     
