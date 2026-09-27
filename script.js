@@ -1,10 +1,11 @@
 // Konfigurasi API Key
 const apiKey = "ac324a808280e23b7458e9e2244c90a2";
-const unsplashKey = "tGhfP7vJcCpyHlYhs1UHMpyZ5y5RyeGD6BOtJZn22q0"; // Access Key dari Unsplash Developers
+const unsplashKey = "tGhfP7vJcCpyHlYhs1UHMpyZ5y5RyeGD6BOtJZn22q0"; 
 
 // URL Endpoints
 const apiUrlCity = "https://api.openweathermap.org/data/2.5/weather?units=metric&q=";
 const apiUrlCoords = "https://api.openweathermap.org/data/2.5/weather?units=metric&";
+const apiUrlForecast = "https://api.openweathermap.org/data/2.5/forecast?units=metric&";
 const geoApiUrl = "https://api.openweathermap.org/geo/1.0/direct?limit=5&q=";
 
 // Elemen DOM
@@ -13,6 +14,7 @@ const searchBtn = document.getElementById("searchBtn");
 const errorMsg = document.getElementById("errorMsg");
 const weatherIcon = document.getElementById("weatherIcon");
 const suggestionsBox = document.getElementById("suggestions");
+const forecastContainer = document.getElementById("forecast");
 
 let debounceTimer;
 let map;
@@ -35,29 +37,66 @@ async function fetchUnsplashBackground(cityName, weatherCondition) {
   }
 }
 
-// 2. Kemas Kini Tampilan UI
+// 2. Dapatkan & Paparkan Ramalan Cuaca 5 Hari
+async function fetchForecast(lat, lon) {
+  try {
+    const response = await fetch(`${apiUrlForecast}lat=${lat}&lon=${lon}&appid=${apiKey}`);
+    if (response.ok) {
+      const data = await response.json();
+      updateForecastUI(data);
+    }
+  } catch (err) {
+    console.error("Ralat Forecast API:", err);
+  }
+}
+
+function updateForecastUI(data) {
+  if (!forecastContainer) return;
+  forecastContainer.innerHTML = "";
+
+  // Tapis data setiap 3 jam untuk ambil slot waktu 12:00:00 tengah hari sahaja
+  const dailyData = data.list.filter((item) => item.dt_txt.includes("12:00:00"));
+
+  dailyData.forEach((item) => {
+    const date = new Date(item.dt * 1000);
+    const dayName = date.toLocaleDateString("ms-MY", { weekday: "short" });
+    const temp = Math.round(item.main.temp);
+    const iconCode = item.weather[0].icon;
+
+    const card = document.createElement("div");
+    card.classList.add("forecast-card");
+    card.innerHTML = `
+      <p style="font-weight: bold;">${dayName}</p>
+      <img src="https://openweathermap.org/img/wn/${iconCode}.png" alt="icon" />
+      <p style="font-weight: bold;">${temp}°C</p>
+    `;
+
+    forecastContainer.appendChild(card);
+  });
+}
+
+// 3. Kemas Kini Tampilan UI Cuaca Semasa
 async function updateUI(data) {
   document.getElementById("city").textContent = data.name;
   document.getElementById("temp").textContent = Math.round(data.main.temp) + "°C";
   document.getElementById("humidity").textContent = data.main.humidity + "%";
   document.getElementById("wind").textContent = data.wind.speed + " km/h";
 
-  // Kemas kini Ikon Cuaca
   const iconCode = data.weather[0].icon;
   weatherIcon.src = `https://openweathermap.org/img/wn/${iconCode}@4x.png`;
 
-  // Kemas kini Latar Belakang Unsplash
   const cityName = data.name;
   const weatherCondition = data.weather[0].main;
   await fetchUnsplashBackground(cityName, weatherCondition);
 
-  // TERKINI: Kemas kini kedudukan Minimap
+  // Kemas kini Minimap & Ramalan 5 Hari
   updateMap(data.coord.lat, data.coord.lon, data.name);
+  fetchForecast(data.coord.lat, data.coord.lon);
 
   errorMsg.style.display = "none";
 }
 
-// 3. Semak Cuaca Mengikut Nama Bandar
+// 4. Semak Cuaca Mengikut Nama Bandar
 async function checkWeatherByCity(city) {
   if (!city) return;
   
@@ -74,7 +113,7 @@ async function checkWeatherByCity(city) {
   }
 }
 
-// 4. Semak Cuaca Mengikut Koordinat GPS (Geolocation)
+// 5. Semak Cuaca Mengikut Koordinat GPS (Geolocation)
 async function checkWeatherByCoords(lat, lon) {
   try {
     const response = await fetch(`${apiUrlCoords}lat=${lat}&lon=${lon}&appid=${apiKey}`);
@@ -89,7 +128,7 @@ async function checkWeatherByCoords(lat, lon) {
   }
 }
 
-// 5. Autocomplete: Ambil Cadangan Lokasi Dari Geocoding API
+// 6. Autocomplete: Ambil Cadangan Lokasi Dari Geocoding API
 async function fetchCitySuggestions(query) {
   if (query.length < 2) {
     suggestionsBox.style.display = "none";
@@ -107,7 +146,7 @@ async function fetchCitySuggestions(query) {
   }
 }
 
-// 6. Autocomplete: Paparkan Cadangan Lokasi Dalam Senarai (Guna Koordinat GPS)
+// 7. Autocomplete: Paparkan Cadangan Lokasi Dalam Senarai
 function showSuggestions(cities) {
   suggestionsBox.innerHTML = "";
 
@@ -127,7 +166,6 @@ function showSuggestions(cities) {
     div.addEventListener("click", () => {
       searchBox.value = fullLocation;
       suggestionsBox.style.display = "none";
-      // TERKINI: Guna koordinat terus untuk elak isu salah bandar
       checkWeatherByCoords(city.lat, city.lon);
     });
 
@@ -137,7 +175,7 @@ function showSuggestions(cities) {
   suggestionsBox.style.display = "block";
 }
 
-// 7. Pengendali Kebenaran GPS Lokasi (Mula-mula Buka Web)
+// 8. Pengendali Kebenaran GPS Lokasi
 function initWeather() {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
@@ -155,7 +193,7 @@ function initWeather() {
   }
 }
 
-// 8. Event Listeners
+// 9. Event Listeners
 searchBtn.addEventListener("click", () => {
   suggestionsBox.style.display = "none";
   checkWeatherByCity(searchBox.value);
@@ -182,7 +220,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// 9. Fungsi Kemas Kini / Inisialisasi Minimap
+// 10. Inisialisasi / Kemas Kini Minimap
 function updateMap(lat, lon, cityName) {
   if (!map) {
     map = L.map('map').setView([lat, lon], 10);
@@ -201,9 +239,8 @@ function updateMap(lat, lon, cityName) {
       .openPopup();
   }
 
-  // Petua Leaflet: Refresh saiz peta supaya tidak render senget/potong
   setTimeout(() => map.invalidateSize(), 200);
 }
 
-// Jalankan aplikasi semasa halaman dimuatkan
+// Mula aplikasi
 initWeather();
