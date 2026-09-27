@@ -211,3 +211,36 @@ body::before {
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
+
+/* Styling untuk Ramalan Cuaca 5 Hari */
+.forecast-container {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 15px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.forecast-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(5px);
+  padding: 8px 5px;
+  border-radius: 10px;
+  text-align: center;
+  flex: 1;
+  min-width: 55px;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.forecast-card p {
+  font-size: 0.75rem;
+  margin: 2px 0;
+}
+
+.forecast-card img {
+  width: 32px;
+  height: 32px;
+  margin: 2px 0;
+}
