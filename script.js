@@ -15,6 +15,8 @@ const weatherIcon = document.getElementById("weatherIcon");
 const suggestionsBox = document.getElementById("suggestions");
 
 let debounceTimer;
+let map;
+let marker;
 
 // 1. Ambil Gambar Latar Belakang HD dari Unsplash API
 async function fetchUnsplashBackground(cityName, weatherCondition) {
@@ -26,7 +28,6 @@ async function fetchUnsplashBackground(cityName, weatherCondition) {
       const data = await response.json();
       document.body.style.backgroundImage = `url('${data.urls.regular}')`;
     } else {
-      // Fallback sekiranya API limit tamat
       document.body.style.backgroundImage = `url('https://images.unsplash.com/photo-1516912481808-3406841bd33c?auto=format&fit=crop&w=1920&q=80')`;
     }
   } catch (err) {
@@ -49,6 +50,9 @@ async function updateUI(data) {
   const cityName = data.name;
   const weatherCondition = data.weather[0].main;
   await fetchUnsplashBackground(cityName, weatherCondition);
+
+  // TERKINI: Kemas kini kedudukan Minimap
+  updateMap(data.coord.lat, data.coord.lon, data.name);
 
   errorMsg.style.display = "none";
 }
@@ -103,7 +107,7 @@ async function fetchCitySuggestions(query) {
   }
 }
 
-// 6. Autocomplete: Paparkan Cadangan Lokasi Dalam Senarai
+// 6. Autocomplete: Paparkan Cadangan Lokasi Dalam Senarai (Guna Koordinat GPS)
 function showSuggestions(cities) {
   suggestionsBox.innerHTML = "";
 
@@ -117,12 +121,14 @@ function showSuggestions(cities) {
     div.classList.add("suggestion-item");
     
     const stateStr = city.state ? `, ${city.state}` : "";
-    div.textContent = `${city.name}${stateStr}, ${city.country}`;
+    const fullLocation = `${city.name}${stateStr}, ${city.country}`;
+    div.textContent = fullLocation;
 
     div.addEventListener("click", () => {
-      searchBox.value = city.name;
+      searchBox.value = fullLocation;
       suggestionsBox.style.display = "none";
-      checkWeatherByCity(city.name);
+      // TERKINI: Guna koordinat terus untuk elak isu salah bandar
+      checkWeatherByCoords(city.lat, city.lon);
     });
 
     suggestionsBox.appendChild(div);
@@ -141,7 +147,6 @@ function initWeather() {
         checkWeatherByCoords(lat, lon);
       },
       (error) => {
-        // Jika user tolak kebenaran GPS -> Fallback ke Kuala Lumpur
         checkWeatherByCity("Kuala Lumpur");
       }
     );
@@ -163,7 +168,6 @@ searchBox.addEventListener("keypress", (e) => {
   }
 });
 
-// Event Listener Taip Huruf demi Huruf (Debounce 300ms)
 searchBox.addEventListener("input", (e) => {
   clearTimeout(debounceTimer);
   const query = e.target.value.trim();
@@ -172,12 +176,34 @@ searchBox.addEventListener("input", (e) => {
   }, 300);
 });
 
-// Sembunyikan Cadangan Apabila Klik Di Luar Kotak Carian
 document.addEventListener("click", (e) => {
   if (!e.target.closest(".input-container")) {
     suggestionsBox.style.display = "none";
   }
 });
+
+// 9. Fungsi Kemas Kini / Inisialisasi Minimap
+function updateMap(lat, lon, cityName) {
+  if (!map) {
+    map = L.map('map').setView([lat, lon], 10);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    marker = L.marker([lat, lon]).addTo(map)
+      .bindPopup(`<b>${cityName}</b>`)
+      .openPopup();
+  } else {
+    map.setView([lat, lon], 10);
+    marker.setLatLng([lat, lon])
+      .setPopupContent(`<b>${cityName}</b>`)
+      .openPopup();
+  }
+
+  // Petua Leaflet: Refresh saiz peta supaya tidak render senget/potong
+  setTimeout(() => map.invalidateSize(), 200);
+}
 
 // Jalankan aplikasi semasa halaman dimuatkan
 initWeather();
