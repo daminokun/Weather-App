@@ -200,3 +200,14 @@ body::before {
   margin-top: 15px;
   display: none;
 }
+
+/* Gaya untuk Minimap */
+#map {
+  height: 180px;
+  width: 100%;
+  border-radius: 12px;
+  margin-top: 15px;
+  z-index: 1; /* Elak bertindih dengan dropdown suggestions */
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
